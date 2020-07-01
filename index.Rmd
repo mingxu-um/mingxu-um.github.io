@@ -1,0 +1,91 @@
+---
+title: "Plastic MFA results"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+load("plastics.RData")
+library(ggplot2)
+```
+
+## 1. Consumption vs. population
+
+## 1.1 Total consumption vs. population 1950-2017
+```{r pressure, echo=FALSE}
+#plots total consumption vs. population
+n_country=dim(consumption)[3]
+n_year=dim(consumption)[1]
+color=rainbow(n_country)
+plot(socioeconomic[,1,1],consumption[,7,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.01,max(consumption[,7,])),col=color[1],log="xy",xlab="population (1,000)",ylab="total plastic consumption (kton)",type = "l")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,7,i],col=color[i],type="l")
+  text(socioeconomic[n_year,1,i],consumption[n_year,7,i],dimnames(consumption)[[3]][i])
+}
+```
+
+### 1.2 It looks like the plastic consumption of all countries grows with popluation exponentially (linearly on a log-log scale), except every country started differently in 1950. Here is a plot of plastic consumption of countries in 1950 vs. population:
+
+```{r, echo=FALSE, warning=FALSE}
+plot(socioeconomic[1,1,],consumption[1,7,],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.01,max(consumption[,7,])),col=color[1],log="xy",xlab="population-1950 (1,000)",ylab="total plastic consumption-1950 (kt)")
+```
+
+### log-log regression of total plastic consumption vs. population in 1950:
+```{r, echo=FALSE}
+lm_log.model=lm(log1p(consumption[1,7,])~log1p(socioeconomic[1,1,]))
+summary(lm_log.model)
+```
+
+### 1.3 Now total plastic consumption/person vs. population in 1950:
+```{r, echo=FALSE, warning=FALSE}
+plot(socioeconomic[1,1,],consumption[1,7,]/socioeconomic[1,1,],log="xy", col=color[1],xlab="population-1950 (1,000)",ylab="total plastic consumption/capita-1950 (t/capita)")
+for (i in c(1:n_country)){
+  text(socioeconomic[1,1,i],consumption[1,7,i]/socioeconomic[1,1,i],dimnames(consumption)[[3]][i])
+}
+boxplot(consumption[1,7,]/socioeconomic[1,1,],ylab="total plastic consumption/person-1950 (t/capita)")
+summary(consumption[1,7,]/socioeconomic[1,1,])
+```
+
+### 1.4 Finally plastic consumption/person vs. population from 1950-2017:
+```{r, echo=FALSE, warning=FALSE}
+plot(socioeconomic[,1,1],consumption[,7,1]/socioeconomic[,1,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.00001,max(consumption[,7,]/socioeconomic[,1,])),col=color[1],log="xy",xlab="population (1,000)",ylab="total plastic consumption/capita (t/capita)",type = "l")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,7,i]/socioeconomic[,1,i],col=color[i],type="l")
+  text(socioeconomic[n_year,1,i],consumption[n_year,7,i]/socioeconomic[n_year,1,i],dimnames(consumption)[[3]][i])
+}
+boxplot(as.vector(consumption[,7,]/socioeconomic[,1,]),ylab="total plastic consumption/capita (t/capita)")
+summary(as.vector(consumption[,7,]/socioeconomic[,1,]))
+```
+
+### 1.5 By sectors (plastic consumption (kt) vs. population (1,000))
+
+```{r, echo=FALSE, warning=FALSE}
+plot(socioeconomic[,1,1],consumption[,7,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,7,])),col=color[1],log="xy",type = "l",xlab="", ylab="",main="total")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,7,i],col=color[i],type="l")
+}
+plot(socioeconomic[,1,1],consumption[,1,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,1,])),col=color[1],log="xy",type = "l",xlab="", ylab="",main="Packaging")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,1,i],col=color[i],type="l")
+}
+plot(socioeconomic[,1,1],consumption[,2,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,2,])),col=color[1],log="xy",type = "l",xlab="", ylab="",main="Building/Construction")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,2,i],col=color[i],type="l")
+}
+plot(socioeconomic[,1,1],consumption[,3,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,3,])),col=color[1],log="xy",type = "l",xlab="", ylab="",main="Transportation")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,3,i],col=color[i],type="l")
+}
+plot(socioeconomic[,1,1],consumption[,4,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,4,])),col=color[1],log="xy",type = "l",xlab="", ylab="",main="EE")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,4,i],col=color[i],type="l")
+}
+plot(socioeconomic[,1,1],consumption[,5,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,5,])),col=color[1],log="xy",type = "l",xlab="", ylab="",main="HH")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,5,i],col=color[i],type="l")
+}
+plot(socioeconomic[,1,1],consumption[,6,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,6,])),col=color[1],log="xy",type = "l",xlab="", ylab="",main="Other")
+for (i in c(2:n_country)){
+  points(socioeconomic[,1,i],consumption[,6,i],col=color[i],type="l")
+}
+```
