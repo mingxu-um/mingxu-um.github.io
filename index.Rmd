@@ -11,6 +11,8 @@ n_year=dim(consumption)[1]
 color=rainbow(n_country)
 ```
 
+## Conclusion: Plastic consumption is best predicted by population and urban population after scaled log transformation
+
 ## 1. Relative changes over time
 
 ### 1.1 Consumption over time
@@ -182,33 +184,18 @@ logCspt=as.vector(logCspt[,-c(20,23,25,37,38)])
 logPop=as.vector(logPop[,-c(20,23,25,37,38)])
 lm_n1log2=lm(logCspt~logPop,na.action = na.exclude)
 summary(lm_n1log2)
+
+plot(0,0,xlab="scaled log_pop (0,1)",ylab="scaled log_consumption (0,1)")
+for (i in c(1:n_country)){
+  points(scale(log10(socioeconomic[,1,i])),scale(log10(consumption[,7,i])),type="p",col=color[i])
+}
+lm2=lm(as.vector(scale(log10(consumption[,7,])[,-c(20,23,25,37,38)]))~as.vector(scale(log10(socioeconomic[,1,]))[,-c(20,23,25,37,38)]),na.action = na.exclude)
+summary(lm2)
 ```
 
 ### as shown above, normalization after log transformation seems to be able to get a good fit
 
-
-### 2.3 Now total plastic consumption/person vs. population in 1950:
-```{r, echo=FALSE, warning=FALSE}
-plot(socioeconomic[1,1,],consumption[1,7,]/socioeconomic[1,1,],log="xy", col=color[1],xlab="population-1950 (1,000)",ylab="total plastic consumption/capita-1950 (t/capita)")
-for (i in c(1:n_country)){
-  text(socioeconomic[1,1,i],consumption[1,7,i]/socioeconomic[1,1,i],dimnames(consumption)[[3]][i])
-}
-boxplot(consumption[1,7,]/socioeconomic[1,1,],ylab="total plastic consumption/person-1950 (t/capita)")
-summary(consumption[1,7,]/socioeconomic[1,1,])
-```
-
-### 2.4 Finally plastic consumption/person vs. population from 1950-2017:
-```{r, echo=FALSE, warning=FALSE}
-plot(100,0.0001,xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.00001,max(consumption[,7,]/socioeconomic[,1,])),col=color[1],log="xy",xlab="population (1,000)",ylab="total plastic consumption/capita (t/capita)",type="n")
-for (i in c(1:n_country)){
-  points(socioeconomic[,1,i],consumption[,7,i]/socioeconomic[,1,i],col=color[i],type="p")
-  text(socioeconomic[n_year,1,i],consumption[n_year,7,i]/socioeconomic[n_year,1,i],dimnames(consumption)[[3]][i])
-}
-boxplot(as.vector(consumption[,7,]/socioeconomic[,1,]),ylab="total plastic consumption/capita (t/capita)")
-summary(as.vector(consumption[,7,]/socioeconomic[,1,]))
-```
-
-### 2.5 By sectors (plastic consumption (kt) vs. population (1,000))
+### 2.3 By sectors (plastic consumption (kt) vs. population (1,000))
 
 ```{r, echo=FALSE, warning=FALSE}
 plot(socioeconomic[,1,1],consumption[,7,1],xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.001,max(consumption[,7,])),col=color[1],log="xy",type = "n",xlab="", ylab="",main="total")
@@ -241,7 +228,46 @@ for (i in c(2:n_country)){
 }
 ```
 
-## 3. Consumption vs. GDP
+## 3 Total plastic consumption/person
+
+### 3.1 Total plastic consumption/person vs. population in 1950:
+```{r, echo=FALSE, warning=FALSE}
+plot(socioeconomic[1,1,],consumption[1,7,]/socioeconomic[1,1,],log="xy", col=color[1],xlab="population-1950 (1,000)",ylab="total plastic consumption/capita-1950 (t/capita)")
+for (i in c(1:n_country)){
+  text(socioeconomic[1,1,i],consumption[1,7,i]/socioeconomic[1,1,i],dimnames(consumption)[[3]][i])
+}
+boxplot(consumption[1,7,]/socioeconomic[1,1,],ylab="total plastic consumption/person-1950 (t/capita)")
+summary(consumption[1,7,]/socioeconomic[1,1,])
+```
+
+### 3.2 Plastic consumption/person vs. population from 1950-2017:
+```{r, echo=FALSE, warning=FALSE}
+plot(100,0.0001,xlim=c(100,max(socioeconomic[,1,])),ylim=c(0.00001,max(consumption[,7,]/socioeconomic[,1,])),col=color[1],log="xy",xlab="population (1,000)",ylab="total plastic consumption/capita (t/capita)",type="n")
+for (i in c(1:n_country)){
+  points(socioeconomic[,1,i],consumption[,7,i]/socioeconomic[,1,i],col=color[i],type="p")
+  text(socioeconomic[n_year,1,i],consumption[n_year,7,i]/socioeconomic[n_year,1,i],dimnames(consumption)[[3]][i])
+}
+boxplot(as.vector(consumption[,7,]/socioeconomic[,1,]),ylab="total plastic consumption/capita (t/capita)")
+summary(as.vector(consumption[,7,]/socioeconomic[,1,]))
+```
+
+### 3.3 scaled-loged plastic consumption/person vs. population from 1950-2017
+```{r, echo=FALSE}
+slogcsmpperson=scale(log10(consumption[,7,]/socioeconomic[,1,]))
+slogcsmpperson[which(is.nan(slogcsmpperson))]=NA
+slogcsmpperson[which(slogcsmpperson==Inf)]=NA
+slogpop=scale(log10(socioeconomic[,1,]))
+slogpop[which(is.nan(slogpop))]=NA
+slogpop[which(slogpop==Inf)]=NA
+plot(0,0,type="n",xlab="scaled-loged pop",ylab="scaled-loged total plastic consumption/person",xlim=c(-2,2),ylim=c(-2,2))
+for (i in c(1:n_country)){
+  points(slogpop[,i],slogcsmpperson[,i],col=color[i],typ="p")
+}
+lmperson=lm(as.vector(slogcsmpperson)~as.vector(slogpop),na.action = na.exclude)
+summary(lmperson)
+```
+
+## 4. Consumption vs. GDP
 nothing interesting
 
 ```{r, echo=FALSE, warning=FALSE}
@@ -290,7 +316,7 @@ for (i in c(1:n_country)){
 }
 ```
 
-## 4. consumption vs. urbanization
+## 5. consumption vs. urbanization
 ```{r, echo=FALSE, warning=FALSE}
 # consumption vs urbanization
 plot(0,0,log="y",xlim=c(0,1),ylim=c(0.00001,max(consumption[,7,])),type = "n",xlab="urbanization rate", ylab="consumption (kt)",main="Total vs. urbanization")
@@ -321,4 +347,43 @@ plot(0,0,log="xy",xlim=c(1,max(socioeconomic[,7,])),ylim=c(0.00001,max(consumpti
 for (i in c(1:n_country)){
   points(socioeconomic[,7,i],consumption[,7,i]/socioeconomic[,7,i],col=color[i],type="p")
 }
+```
+
+### 5.1 consumption vs. pop after log transformation then scale
+```{r, echo=FALSE}
+slogcsmp=scale(log10(consumption[,7,]))
+slogurbanpop=scale(log10(socioeconomic[,7,]))
+plot(0,0,type="n",xlab="scaled-loged urban population",ylab="scaled-loged total plastic consumption")
+for (i in c(1:n_country)){
+  points(slogurbanpop[,i],slogcsmp[,i],col=color[i],typ="p")
+}
+slogcsmp[which(is.nan(slogcsmp))]=NA
+slogcsmp[which(slogcsmp==Inf)]=NA
+slogurbanpop[which(is.nan(slogurbanpop))]=NA
+slogurbanpop[which(slogurbanpop==Inf)]=NA
+lmurban=lm(as.vector(slogcsmp)~as.vector(slogurbanpop),na.action = na.exclude)
+summary(lmurban)
+```
+
+### 5.2 scaled-loged consumption vs. urbanization
+```{r, echo=FALSE}
+plot(0,0,type="n",xlab="urbanization",ylab="scaled-loged total plastic consumption",xlim=c(0,1),ylim=c(-2,2))
+for (i in c(1:n_country)){
+  points(socioeconomic[,6,i],slogcsmp[,i],col=color[i],typ="p")
+}
+lmurbanization=lm(as.vector(slogcsmp)~as.vector(socioeconomic[,6,]),na.action = na.exclude)
+summary(lmurbanization)
+```
+
+### 5.3 scaled-loged consumption/person vs. urban population
+```{r, echo=FALSE}
+slogcsmpperson=scale(log10(consumption[,7,]/socioeconomic[,1,]))
+slogcsmpperson[which(is.nan(slogcsmpperson))]=NA
+slogcsmpperson[which(slogcsmpperson==Inf)]=NA
+plot(0,0,type="n",xlab="scaled-loged urban pop",ylab="scaled-loged total plastic consumption/person",xlim=c(0,1),ylim=c(-2,2))
+for (i in c(1:n_country)){
+  points(slogurbanpop[,i],slogcsmpperson[,i],col=color[i],typ="p")
+}
+lmpersonurban=lm(as.vector(slogcsmpperson)~as.vector(slogurbanpop),na.action = na.exclude)
+summary(lmpersonurban)
 ```
