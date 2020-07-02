@@ -68,6 +68,21 @@ plot(socioeconomic[1,1,],consumption[1,7,],xlim=c(100,max(socioeconomic[,1,])),y
 lm_log.model=lm(log1p(consumption[1,7,])~log1p(socioeconomic[1,1,]))
 summary(lm_log.model)
 ```
+### If logY = a*logP + b, and logY0 = m*logP0 + n, we can get logYn = a*logPn + (a-m)*logP0 + (b-n). The results are not good, probably because these countries are two clusters (see above figure)
+```{r, echo=FALSE}
+normalized_pop=t(t(socioeconomic[,1,])/socioeconomic[1,1,])
+nor_consumption = t(t(consumption[,7,])/consumption[1,7,])
+logYn = log1p(nor_consumption)
+logPn = log1p(normalized_pop)
+logP0 = matrix(1,68,42) %*% diag(log1p(socioeconomic[1,1,]))
+logYn[which(is.nan(logYn))] = NA
+logYn[which(logYn==Inf)] = NA
+logYn=as.vector(logYn[,-c(20,23,25,37,38)])
+logPn=as.vector(logPn[,-c(20,23,25,37,38)])
+logP0=as.vector(logP0[,-c(20,23,25,37,38)])
+lm_model.model=lm(logYn~logPn+logP0, na.action = na.exclude)
+summary(lm_model.model)
+```
 
 ### consumption vs. pop normalized by 1950
 ```{r, echo=FALSE}
@@ -84,20 +99,11 @@ plot(1,1,xlim=c(min(scale(socioeconomic[,1,],center=FALSE)),max(scale(socioecono
 for (i in c(1:n_country)){
   points(scale(socioeconomic[,1,i],center=FALSE),scale(consumption[,7,i],center=FALSE),col=color[i],type="p")
 }
-```
-
-### If logY = a*logP + b, and logY0 = m*logP0 + n, we can get logYn = a*logPn + (a-m)*logP0 + (b-n). The results are not good, probably because these countries are two clusters (see above figure)
-```{r, echo=FALSE}
-logYn = log1p(nor_consumption)
-logPn = log1p(normalized_pop)
-logP0 = matrix(1,68,42) %*% diag(log1p(socioeconomic[1,1,]))
-logYn[which(is.nan(logYn))] = NA
-logYn[which(logYn==Inf)] = NA
-logYn=as.vector(logYn[,-c(20,23,25,37,38)])
-logPn=as.vector(logPn[,-c(20,23,25,37,38)])
-logP0=as.vector(logP0[,-c(20,23,25,37,38)])
-lm_model.model=lm(logYn~logPn+logP0, na.action = na.exclude)
-summary(lm_model.model)
+# regression of after scale
+y=as.vector(scale(consumption[,7,]))
+x=as.vector(scale(socioeconomic[,1,]))
+lm_scale=lm(y~x)
+summary(lm_scale)
 ```
 
 ### Clustering using K-Means for two clusters
